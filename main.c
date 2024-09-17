@@ -9,6 +9,8 @@
 
 int main(void) {
     char input[MAXLINE];
+    char *token;
+    char delim[2] = " ";
 
     pid_t p = fork();
 
@@ -21,12 +23,21 @@ int main(void) {
         while (1) {
             printf("myshell > ");
             fgets(input, MAXLINE, stdin);
+
             input[strlen(input) - 1] = '\0';
 
-            if (strcmp(input, "exit") == 0)
+            token = strtok(input, delim);
+
+            if (!strcmp(token, "cd")) {
+                token = strtok(NULL, delim);
+                chdir(token);
+            }
+
+            else if (!strcmp(input, "exit"))
                 break;
             
-            system(input);
+            else
+                system(input);
         }
     }
 
