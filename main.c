@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,40 +11,61 @@
 int main(void) {
     char input[MAXLINE];
     char *token;
+    char *args[MAXLINE];
     char delim[2] = " ";
+    int i, len, cd;
+    
+    while (1) {
+        pid_t p = fork();
 
-    pid_t p = fork();
+        if (p < 0) {
+            perror("fork failed");
+            exit(1);
+        }
 
-    if (p < 0) {
-        perror("fork failed");
-        exit(1);
-    }
+        else if (p == 0) {
+            token = "";
 
-    else if (p == 0) {
-        while (1) {
+            for (i = 0; i < MAXLINE; i++)
+                args[i] = NULL;
+
             printf("myshell > ");
             fgets(input, MAXLINE, stdin);
 
-            input[strlen(input) - 1] = '\0';
+            len = strlen(input);
+
+            input[len - 1] = '\0';
 
             token = strtok(input, delim);
 
+            args[0] = token;
+
+            for (i = 1; (args[i] = strtok(NULL, delim)) != NULL; i++)
+                ;
+
+            args[i] = NULL;
+
             if (!strcmp(token, "cd")) {
-                token = strtok(NULL, delim);
-                chdir(token);
+                cd = chdir(args[1]);
+
+                if (cd < 0)
+                   printf("Invalid directory\n");
             }
 
-            else if (!strcmp(input, "exit"))
-                break;
+            if (!strcmp(input, "exit"))
+                exit(1);
             
             else
-                system(input);
+                execvp(token, args);
         }
-    }
 
-    else {
-        int status;
-        wait(&status);
+        else {
+            int status;
+            wait(&status);
+
+            if (status)
+                return 0;
+        }
     }
 
     return 0;
