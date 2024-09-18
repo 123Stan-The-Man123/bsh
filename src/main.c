@@ -29,7 +29,6 @@ void main_loop(void) {
     
     while (1) {                         /* Infinite loop */
         printf("myshell > ");           /* Print the user prompt */
-        fflush(stdout);                 /* Immediately print the prompt to avoid any conflicts */
         fgets(input, MAXLINE, stdin);   /* Get the input from stdin */
 
         len = strlen(input);
@@ -39,15 +38,15 @@ void main_loop(void) {
 
         i = get_tokens(input, " ", args);   /* Gets all tokens from input */
 
-        if (!strcmp(args[0], ""))    /* Skips the rest if no tokens entered */
-            continue; 
+        if (args[0] == NULL)    /* Continue if no tokens entered */
+            continue;
 
-        if (!strcmp(args[i], "&")) {      /* Sets the background flag to true and removes the '&' token */
+        if (!strcmp(args[i-1], "&") && i > 1) {      /* Sets the background flag to true and removes the '&' token */
             background_process = 1;
             i--;
         }
 
-        args[i+1] = NULL;     /* Replaces whatever the failed strtok returned with NULL */
+        args[i] = NULL;     /* Replaces whatever the failed strtok returned with NULL */
 
         if (!strcmp(args[0], "cd")) {   /* Checks if command is cd */
             cd(args[1]);
@@ -66,8 +65,9 @@ void main_loop(void) {
         if (!background_process)            /* Waits for process to finish unless it is a background process */
             wait(NULL);
         
-        else
+        else {
             background_process = 0;         /* Resets the flag otherwise */
+        }
     }
 }
 
@@ -82,7 +82,7 @@ int get_tokens(char *input, char *delim, char *args[]) {
     for (i = 1; (args[i] = strtok(NULL, delim)) != NULL; i++)   /* Proceeds to grab all tokens from input */
         ;
     
-    return --i;   /* Returns the position of the last token */
+    return i;   /* Returns the position of the last token */
 }   
 
 void cd(char *path) {
