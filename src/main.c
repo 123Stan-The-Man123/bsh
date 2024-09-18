@@ -79,8 +79,12 @@ int get_tokens(char *input, char *delim, char *args[]) {
 
     args[0] = strtok(input, delim);     /* Gets the first token */
 
-    for (i = 1; (args[i] = strtok(NULL, delim)) != NULL; i++)   /* Proceeds to grab all tokens from input */
-        ;
+    for (i = 1; (args[i] = strtok(NULL, delim)) != NULL; i++) {   /* Proceeds to grab all tokens from input */
+        if (args[i][0] == '$' && args[i][1] != '\0') {
+            args[i]++;
+            args[i] = getenv(args[i]);
+        }
+    }
     
     return i;   /* Returns the position of the last token */
 }   
@@ -89,7 +93,7 @@ void cd(char *path) {
     int cd;
 
     if (path == NULL) {         /* Defaults path to /home if empty */
-            chdir("/home");
+            chdir(getenv("HOME"));
             return ;            /* Leave function early */
         }
 
