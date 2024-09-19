@@ -5,7 +5,6 @@ I am writing this shell completely for fun, as a way to practice and learn C whi
 * Command parsing
 * cd, history, export and exit built-in commands (more to come!)
 * Accessing and setting of $PATH variables
-* Stdout redirection using '>'
 * Command history
 * Tab completion
 * External command execution

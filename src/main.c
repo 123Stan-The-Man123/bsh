@@ -88,6 +88,8 @@ void main_loop(void) {
         else {
             background_process = 0;         /* Resets the flag otherwise */
         }
+
+        freopen("/dev/tty", "w", stdout);
     }
 
     free(input);
@@ -95,6 +97,7 @@ void main_loop(void) {
 
 int get_tokens(char *input, char *delim, char *args[]) {
     int i;
+    int redirect_flag = 0;
 
     for (i = 0; i < MAXLINE; i++)       /* Initialises the token array with NULL */
             args[i] = NULL;
@@ -111,10 +114,33 @@ int get_tokens(char *input, char *delim, char *args[]) {
                 return -1;
             }
         }
+
+        else if (!strcmp(args[i], ">")) {
+            redirect_flag = 1;
+            continue;
+        }
+
+        if (redirect_flag) {
+            redirect_flag = 0;
+
+            if (args[i] == NULL) {
+                printf("Missing file name\n");
+                return -1;
+            }
+
+            if (freopen(args[i], "a+", stdout) == NULL) {
+                perror("freopen failed");
+                return -1;
+            }
+
+            args[i-1] = args[i] = NULL;
+
+            i -= 2;
+        }
     }
     
     return i;   /* Returns the position of the last token */
-}   
+}
 
 void fork_child(char *args[]) {
     pid_t p = fork();               /* Creates a forked process */
