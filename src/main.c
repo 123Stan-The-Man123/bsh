@@ -58,6 +58,11 @@ void main_loop(void) {
             continue;
         }
 
+        if (!strcmp(args[0], "history")) {
+            history();
+            continue;
+        }
+
         if (!strcmp(args[0], "export")) {
             if (args[1] != NULL)
                 export_var(args[1]);

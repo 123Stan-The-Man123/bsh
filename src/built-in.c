@@ -1,3 +1,4 @@
+#include <readline/history.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +17,16 @@ void cd(char *path) {
 
         if (cd < 0)             /* Returns error message if an invalid path was given */
             printf("Invalid directory\n");
+}
+
+void history(void) {
+    for (int i = 0; i < history_length; i++) {
+        history_set_pos(i);
+        HIST_ENTRY *current = current_history();
+        printf("%s\n", current->line);
+    }
+
+    return ;
 }
 
 void export_var(char *variable) {

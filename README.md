@@ -5,7 +5,7 @@ I am writing this shell completely for fun, as a way to practice and learn C whi
 * Command parsing
 * cd and exit built-in commands (more to come!)
 * Accessing $PATH variables (I will implement export soon)
-* Cycling command history
+* Command history
 * External command execution
 * Background process support (buggy)
 * Some basic error handling
