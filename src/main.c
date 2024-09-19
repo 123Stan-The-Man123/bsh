@@ -1,6 +1,6 @@
+#include <stdio.h>
 #include <readline/history.h>
 #include <readline/readline.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -41,6 +41,10 @@ void main_loop(void) {
             input[len - 1] = '\0';                  /* Replace the newline with a nul terminator */
 
         i = get_tokens(input, " ", args);   /* Gets all tokens from input */
+
+        if (i == -1) {
+            continue;
+        }
 
         if (args[0] == NULL)    /* Continue if no tokens entered */
             continue;
@@ -85,6 +89,8 @@ void main_loop(void) {
             background_process = 0;         /* Resets the flag otherwise */
         }
     }
+
+    free(input);
 }
 
 int get_tokens(char *input, char *delim, char *args[]) {
@@ -99,6 +105,11 @@ int get_tokens(char *input, char *delim, char *args[]) {
         if (args[i][0] == '$' && args[i][1] != '\0') {
             args[i]++;
             args[i] = getenv(args[i]);
+
+            if (args[i] == NULL) {
+                printf("Variable not found\n");
+                return -1;
+            }
         }
     }
     

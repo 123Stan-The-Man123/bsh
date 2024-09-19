@@ -1,5 +1,5 @@
-#include <readline/history.h>
 #include <stdio.h>
+#include <readline/history.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
