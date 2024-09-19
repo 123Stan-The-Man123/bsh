@@ -1,18 +1,22 @@
+#include <readline/history.h>
+#include <readline/readline.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "built-in.h"
 
 #define MAXLINE 100
 
 void main_loop(void);
 int get_tokens(char *input, char *delim, char *args[]);
-void cd(char *path);
 void fork_child(char *args[]);
 
 int main(void) {
+
+    using_history();
 
     main_loop();    /* Enter the main event loop */
 
@@ -20,7 +24,7 @@ int main(void) {
 }
 
 void main_loop(void) {
-    char input[MAXLINE];            /* String to store input */
+    char *input;            /* String to store input */
     char *args[MAXLINE];            /* Array of strings to store all arguments */
     int i, len;
     int background_process = 0;     /* Flag to check if the process is to be run in the background */
@@ -28,8 +32,8 @@ void main_loop(void) {
     system("clear");                /* Clear the screen on launch */
     
     while (1) {                         /* Infinite loop */
-        printf("myshell > ");           /* Print the user prompt */
-        fgets(input, MAXLINE, stdin);   /* Get the input from stdin */
+        input = readline("myshell > ");
+        add_history(input);
 
         len = strlen(input);
 
@@ -51,6 +55,11 @@ void main_loop(void) {
         if (!strcmp(args[0], "cd")) {   /* Checks if command is cd */
             cd(args[1]);
             
+            continue;
+        }
+
+        if (!strcmp(args[0], "export")) {
+            export_var(args[1]);
             continue;
         }
 
@@ -88,20 +97,6 @@ int get_tokens(char *input, char *delim, char *args[]) {
     
     return i;   /* Returns the position of the last token */
 }   
-
-void cd(char *path) {
-    int cd;
-
-    if (path == NULL) {         /* Defaults path to /home if empty */
-            chdir(getenv("HOME"));
-            return ;            /* Leave function early */
-        }
-
-        cd = chdir(path);       /* Collects the status code and potentially changes directory */
-
-        if (cd < 0)             /* Returns error message if an invalid path was given */
-            printf("Invalid directory\n");
-}
 
 void fork_child(char *args[]) {
     pid_t p = fork();               /* Creates a forked process */
