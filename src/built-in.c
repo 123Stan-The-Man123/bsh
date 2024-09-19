@@ -23,7 +23,7 @@ void history(void) {
     for (int i = 0; i < history_length; i++) {
         history_set_pos(i);
         HIST_ENTRY *current = current_history();
-        printf("%s\n", current->line);
+        printf("%4d %s\n", i, current->line);
     }
 
     return ;
