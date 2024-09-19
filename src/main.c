@@ -59,7 +59,9 @@ void main_loop(void) {
         }
 
         if (!strcmp(args[0], "export")) {
-            export_var(args[1]);
+            if (args[1] != NULL)
+                export_var(args[1]);
+                
             continue;
         }
 
