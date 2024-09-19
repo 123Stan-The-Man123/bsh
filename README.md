@@ -6,6 +6,7 @@ I am writing this shell completely for fun, as a way to practice and learn C whi
 * cd and exit built-in commands (more to come!)
 * Accessing $PATH variables (I will implement export soon)
 * Command history
+* Tab completion
 * External command execution
 * Background process support (buggy)
 * Some basic error handling
