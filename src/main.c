@@ -123,12 +123,7 @@ int get_tokens(char *input, char *delim, char *args[]) {
         if (redirect_flag) {
             redirect_flag = 0;
 
-            if (args[i] == NULL) {
-                printf("Missing file name\n");
-                return -1;
-            }
-
-            if (freopen(args[i], "a+", stdout) == NULL) {
+            if (freopen(args[i], "w", stdout) == NULL) {
                 perror("freopen failed");
                 return -1;
             }
@@ -137,6 +132,11 @@ int get_tokens(char *input, char *delim, char *args[]) {
 
             i -= 2;
         }
+    }
+
+    if (redirect_flag) {
+        printf("error: missing file name\n");
+        return -1;
     }
     
     return i;   /* Returns the position of the last token */
