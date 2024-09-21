@@ -11,8 +11,7 @@
 #define MAXLINE 1000
 
 void main_loop(void);
-int get_tokens(char *input, char *delim, char *args[]);
-int detect_builtin(char *args[]);
+int get_tokens(char *input, char *delim, char *args[], int *reset);
 void fork_child(char *args[]);
 
 int main(void) {
@@ -30,6 +29,8 @@ void main_loop(void) {
     int i, len;
     int background_process = 0;     /* Flag to check if the process is to be run in the background */
     char credentials[MAXLINE] = "@";
+    int reset_val = 0;
+    int *reset = &reset_val;
 
     system("clear");                /* Clear the screen on launch */
     
@@ -51,7 +52,7 @@ void main_loop(void) {
         if (input[len - 1] == '\n')
             input[len - 1] = '\0';                  /* Replace the newline with a nul terminator */
 
-        i = get_tokens(input, " ", args);   /* Gets all tokens from input */
+        i = get_tokens(input, " ", args, reset);   /* Gets all tokens from input */
 
         if (i == -1) {      /* Continue if get_tokens failed*/
             continue;
@@ -80,15 +81,21 @@ void main_loop(void) {
             background_process = 0;         /* Resets the flag otherwise */
         }
 
-        freopen("/dev/tty", "w", stdout);   /* Reset stdout */
+        if (*reset) {      /* Resets stdin and stdout if the flag is set */
+            *reset = 0;
+            printf("\n");
+            freopen("/dev/tty", "r", stdin);
+            freopen("/dev/tty", "w", stdout);
+        }
     }
 
     free(input);    /* Free the input during program termination */
 }
 
-int get_tokens(char *input, char *delim, char *args[]) {
+int get_tokens(char *input, char *delim, char *args[], int *reset) {
     int i;
-    int redirect_flag = 0;
+    int redirect_output_flag = 0;
+    int redirect_input_flag = 0;
 
     for (i = 0; i < MAXLINE; i++)       /* Initialises the token array with NULL */
             args[i] = NULL;
@@ -106,13 +113,38 @@ int get_tokens(char *input, char *delim, char *args[]) {
             }
         }
 
-        else if (!strcmp(args[i], ">")) {              /* Checks if the token is a redirection operator */
-            redirect_flag = 1;
+        else if (!strcmp(args[i], "<")) {
+            redirect_input_flag = 1;
             continue;
         }
 
-        if (redirect_flag) {        /* Checks for redirection */
-            redirect_flag = 0;
+        else if (!strcmp(args[i], ">")) {              /* Checks if the token is a redirection operator */
+            redirect_output_flag = 1;
+            continue;
+        }
+
+        if (redirect_input_flag) {
+            redirect_input_flag = 0;
+            *reset = 1;
+
+            if (!fopen(args[i], "r")) {            /* Checks for file */
+                printf("File not found\n");
+                return -1;
+            }
+            
+            if (freopen(args[i], "r", stdin) == NULL) {    /* Error check for freopen */
+                perror("freopen failed");
+                return -1;
+            }
+
+            args[i-1] = args[i] = NULL;         /* Resets part of the token array */
+
+            i -= 2;
+        }
+
+        else if (redirect_output_flag) {        /* Checks for redirection */
+            redirect_output_flag = 0;
+            *reset = 1;
 
             if (freopen(args[i], "w", stdout) == NULL) {    /* Error check for freopen */
                 perror("freopen failed");
@@ -125,39 +157,12 @@ int get_tokens(char *input, char *delim, char *args[]) {
         }
     }
 
-    if (redirect_flag) {                        /* Error check for redirection */
+    if (redirect_input_flag || redirect_output_flag) {                        /* Error check for redirection */
         printf("error: missing file name\n");
         return -1;
     }
     
     return i;   /* Returns the position of the last token */
-}
-
-int detect_builtin(char *args[]) {      /* Compares the input to the available built-in commands*/
-    if (!strcmp(args[0], "cd")) {
-        cd(args[1]);
-        
-        return 1;
-    }
-
-    if (!strcmp(args[0], "history")) {
-        history();
-        return 1;
-    }
-
-    if (!strcmp(args[0], "export")) {
-        if (args[1] != NULL)
-            export_var(args[1]);
-            
-        return 1;
-    }
-
-    if (!strcmp(args[0], "exit")) {
-        system("clear");
-        exit(0);
-    }
-
-    return 0;   /* Returns 0 if no built-in command was found */
 }
 
 void fork_child(char *args[]) {

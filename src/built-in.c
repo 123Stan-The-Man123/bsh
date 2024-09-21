@@ -5,6 +5,33 @@
 #include <unistd.h>
 #include "built-in.h"
 
+int detect_builtin(char *args[]) {      /* Compares the input to the available built-in commands*/
+    if (!strcmp(args[0], "cd")) {
+        cd(args[1]);
+        
+        return 1;
+    }
+
+    if (!strcmp(args[0], "history")) {
+        history();
+        return 1;
+    }
+
+    if (!strcmp(args[0], "export")) {
+        if (args[1] != NULL)
+            export_var(args[1]);
+            
+        return 1;
+    }
+
+    if (!strcmp(args[0], "exit")) {
+        system("clear");
+        exit(0);
+    }
+
+    return 0;   /* Returns 0 if no built-in command was found */
+}
+
 void cd(char *path) {
     int cd;
 
