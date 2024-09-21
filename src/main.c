@@ -8,10 +8,11 @@
 #include <unistd.h>
 #include "built-in.h"
 
-#define MAXLINE 100
+#define MAXLINE 1000
 
 void main_loop(void);
 int get_tokens(char *input, char *delim, char *args[]);
+int detect_builtin(char *args[]);
 void fork_child(char *args[]);
 
 int main(void) {
@@ -28,11 +29,21 @@ void main_loop(void) {
     char *args[MAXLINE];            /* Array of strings to store all arguments */
     int i, len;
     int background_process = 0;     /* Flag to check if the process is to be run in the background */
+    char credentials[MAXLINE] = "@";
 
     system("clear");                /* Clear the screen on launch */
     
-    while (1) {                         /* Infinite loop */
-        input = readline("myshell > ");
+    while (1) {                     /* Infinite loop */
+
+        /* Gets the username and the current working directory to display as the prompt */
+        credentials[1] = '\0';
+        strcat(credentials, getlogin());
+        strcat(credentials, "-->");
+        strcat(credentials, getcwd(NULL, 0));
+        strcat(credentials, " > ");
+
+        /* Display the prompt and add the user's input to history */
+        input = readline(credentials);
         add_history(input);
 
         len = strlen(input);
@@ -42,7 +53,7 @@ void main_loop(void) {
 
         i = get_tokens(input, " ", args);   /* Gets all tokens from input */
 
-        if (i == -1) {
+        if (i == -1) {      /* Continue if get_tokens failed*/
             continue;
         }
 
@@ -55,30 +66,10 @@ void main_loop(void) {
         }
 
         args[i] = NULL;     /* Replaces whatever the failed strtok returned with NULL */
-
-        if (!strcmp(args[0], "cd")) {   /* Checks if command is cd */
-            cd(args[1]);
-            
-            continue;
-        }
-
-        if (!strcmp(args[0], "history")) {
-            history();
-            continue;
-        }
-
-        if (!strcmp(args[0], "export")) {
-            if (args[1] != NULL)
-                export_var(args[1]);
-                
-            continue;
-        }
-
-        if (!strcmp(args[0], "exit")) {     /* Checks if command is exit */
-            system("clear");
-            exit(0);
-        }
         
+        if (detect_builtin(args))      /* Detects if the command is a built-in command */
+            continue;
+
         else 
             fork_child(args);               /* Forks the parent process to handle the command */
 
@@ -89,10 +80,10 @@ void main_loop(void) {
             background_process = 0;         /* Resets the flag otherwise */
         }
 
-        freopen("/dev/tty", "w", stdout);
+        freopen("/dev/tty", "w", stdout);   /* Reset stdout */
     }
 
-    free(input);
+    free(input);    /* Free the input during program termination */
 }
 
 int get_tokens(char *input, char *delim, char *args[]) {
@@ -105,41 +96,68 @@ int get_tokens(char *input, char *delim, char *args[]) {
     args[0] = strtok(input, delim);     /* Gets the first token */
 
     for (i = 1; (args[i] = strtok(NULL, delim)) != NULL; i++) {   /* Proceeds to grab all tokens from input */
-        if (args[i][0] == '$' && args[i][1] != '\0') {
+        if (args[i][0] == '$' && args[i][1] != '\0') {       /* Checks if the token is an environment variable */
             args[i]++;
             args[i] = getenv(args[i]);
 
-            if (args[i] == NULL) {
+            if (args[i] == NULL) {                     /* Returns an error if the variable is not set */
                 printf("Variable not found\n");
                 return -1;
             }
         }
 
-        else if (!strcmp(args[i], ">")) {
+        else if (!strcmp(args[i], ">")) {              /* Checks if the token is a redirection operator */
             redirect_flag = 1;
             continue;
         }
 
-        if (redirect_flag) {
+        if (redirect_flag) {        /* Checks for redirection */
             redirect_flag = 0;
 
-            if (freopen(args[i], "w", stdout) == NULL) {
+            if (freopen(args[i], "w", stdout) == NULL) {    /* Error check for freopen */
                 perror("freopen failed");
                 return -1;
             }
 
-            args[i-1] = args[i] = NULL;
+            args[i-1] = args[i] = NULL;         /* Resets part of the token array */
 
             i -= 2;
         }
     }
 
-    if (redirect_flag) {
+    if (redirect_flag) {                        /* Error check for redirection */
         printf("error: missing file name\n");
         return -1;
     }
     
     return i;   /* Returns the position of the last token */
+}
+
+int detect_builtin(char *args[]) {      /* Compares the input to the available built-in commands*/
+    if (!strcmp(args[0], "cd")) {
+        cd(args[1]);
+        
+        return 1;
+    }
+
+    if (!strcmp(args[0], "history")) {
+        history();
+        return 1;
+    }
+
+    if (!strcmp(args[0], "export")) {
+        if (args[1] != NULL)
+            export_var(args[1]);
+            
+        return 1;
+    }
+
+    if (!strcmp(args[0], "exit")) {
+        system("clear");
+        exit(0);
+    }
+
+    return 0;   /* Returns 0 if no built-in command was found */
 }
 
 void fork_child(char *args[]) {

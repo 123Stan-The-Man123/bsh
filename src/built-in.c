@@ -20,23 +20,16 @@ void cd(char *path) {
 }
 
 void history(void) {
-    for (int i = 0; i < history_length; i++) {
-        history_set_pos(i);
-        HIST_ENTRY *current = current_history();
-        printf("%4d %s\n", i, current->line);
+    for (int i = 0; i < history_length; i++) {      /* Iterates through the history */
+        history_set_pos(i);                         
+        HIST_ENTRY *current = current_history();    
+        printf("%4d %s\n", i, current->line);       /* Fetch and print the line at that point */
     }
 
     return ;
 }
 
 void export_var(char *variable) {
-    int len = strlen(variable);
-
-    if (variable[0] == '\"' && variable[len-2] == '\"') {
-        variable++;
-        variable[len-2] = '\0';
-    }
-
-    putenv(variable);
+    putenv(variable);           /* Sets the environment variable */
     return ;
 }

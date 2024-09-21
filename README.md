@@ -8,6 +8,7 @@ I am writing this shell completely for fun, as a way to practice and learn C whi
 * Stdout redirection using '>'
 * Command history
 * Tab completion
+* Username and current working directory displayed in prompt
 * External command execution
 * Background process support (buggy)
 * Some basic error handling
