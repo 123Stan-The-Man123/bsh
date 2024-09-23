@@ -2,6 +2,7 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 #include <stdlib.h>
+#include <bsd/string.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
