@@ -49,14 +49,20 @@ bool detect_builtin(char const *args[static 1]) {
 }
 
 void cd(char const *path) {
+    static char prev_path[MAXLINE];
+
     if (!path)
         path = getenv("HOME");
     if (strcmp("~", path) == 0)
         path = getenv("HOME");
- 
-    if (!chdir(path)) {
+    if (strcmp("-", path) == 0)
+        if (!chdir(prev_path))
+            return;
+
+    strcpy(prev_path, getcwd(NULL, 0));
+    
+    if (!chdir(path))
         return;
-    }
     switch (errno) {
         case EACCES:
             puts("cd: permission denied");
