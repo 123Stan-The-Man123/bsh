@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include "built-in.h"
 
-#define MAXLINE 1000 // buffer size
 #define MAXPROMPT 201 // 200 characters + nul
 
 static void main_loop(void);

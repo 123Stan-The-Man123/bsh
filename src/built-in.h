@@ -1,5 +1,7 @@
 #include <stdbool.h>
 
+#define MAXLINE 1000 // buffer size
+
 /**
  * Compares the input to the available built-in commands.
  * Executes built-ins and returns `true`, otherwise just returns `false`.

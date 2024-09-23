@@ -6,8 +6,6 @@
 #include <sys/errno.h>
 #include "built-in.h"
 
-#define MAXLINE 1000
-
 static void cd(char const *path);
 static void history(void);
 static void export_var(char const *variable);
@@ -49,15 +47,20 @@ bool detect_builtin(char const *args[static 1]) {
 }
 
 void cd(char const *path) {
+    static char temp[MAXLINE];
     static char prev_path[MAXLINE];
 
     if (!path)
         path = getenv("HOME");
     if (strcmp("~", path) == 0)
         path = getenv("HOME");
-    if (strcmp("-", path) == 0)
-        if (!chdir(prev_path))
-            return;
+    if (strcmp("-", path) == 0) {
+        strcpy(temp, prev_path);
+        strcpy(prev_path, getcwd(NULL, 0));
+        if (!chdir(temp)) {
+          return ;
+        }
+    }
 
     strcpy(prev_path, getcwd(NULL, 0));
     
