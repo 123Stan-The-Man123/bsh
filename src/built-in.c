@@ -6,11 +6,11 @@
 #include <sys/errno.h>
 #include "built-in.h"
 
+#define MAXLINE 1000
+
 static void cd(char const *path);
 static void history(void);
 static void export_var(char const *variable);
-
-static const char *prev_nav = "";
 
 bool detect_builtin(char const *args[static 1]) {
     if (!strcmp(args[0], "cd")) {
@@ -53,10 +53,8 @@ void cd(char const *path) {
         path = getenv("HOME");
     if (strcmp("~", path) == 0)
         path = getenv("HOME");
-    if (strcmp("-", path) == 0) {
-        if (path) path = prev_nav;
-    } if (!chdir(path)) {
-        prev_nav = path;
+ 
+    if (!chdir(path)) {
         return;
     }
     switch (errno) {
