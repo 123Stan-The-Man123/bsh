@@ -10,6 +10,8 @@ static void cd(char const *path);
 static void history(void);
 static void export_var(char const *variable);
 
+static const char *prev_nav = "";
+
 bool detect_builtin(char const *args[static 1]) {
     if (!strcmp(args[0], "cd")) {
         if (args[1] && args[2])
@@ -49,8 +51,14 @@ bool detect_builtin(char const *args[static 1]) {
 void cd(char const *path) {
     if (!path)
         path = getenv("HOME");
-    if (!chdir(path))
+    if (strcmp("~", path) == 0)
+        path = getenv("HOME");
+    if (strcmp("-", path) == 0) {
+        if (path) path = prev_nav;
+    } if (!chdir(path)) {
+        prev_nav = path;
         return;
+    }
     switch (errno) {
         case EACCES:
             puts("cd: permission denied");
