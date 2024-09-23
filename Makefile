@@ -2,5 +2,6 @@ CC = gcc
 CFLAGS = -Wall -Wextra -Werror
 SRC = src/main.c src/built-in.c
 
-main: ./src/main.c
-	$(CC) $(CFLAGS) -o ./src/main $(SRC) -lreadline
+bin/main: $(SRC)
+	mkdir -p bin
+	$(CC) $(CFLAGS) -o $@ $^ -lreadline

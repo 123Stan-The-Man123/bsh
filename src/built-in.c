@@ -3,60 +3,85 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/errno.h>
 #include "built-in.h"
 
-int detect_builtin(char *args[]) {      /* Compares the input to the available built-in commands*/
+static void cd(char const *path);
+static void history(void);
+static void export_var(char const *variable);
+
+bool detect_builtin(char const *args[static 1]) {
     if (!strcmp(args[0], "cd")) {
-        cd(args[1]);
-        
-        return 1;
+        if (args[1] && args[2])
+            puts("cd: too many arguments");
+        else
+            cd(args[1]);
+        return true;
     }
 
     if (!strcmp(args[0], "history")) {
-        history();
-        return 1;
+        if (args[1])
+            puts("history: too many arguments");
+        else
+            history();
+        return true;
     }
 
     if (!strcmp(args[0], "export")) {
-        if (args[1] != NULL)
-            export_var(args[1]);
-            
-        return 1;
+        if (!args[1])
+            puts("export: missing argument");
+        for (int i = 1; args[i]; ++i)
+            export_var(args[i]);
+        return true;
     }
 
     if (!strcmp(args[0], "exit")) {
-        system("clear");
-        exit(0);
+        if (!args[1]) {
+            system("clear");
+            exit(0);
+        }
+        return true;
     }
 
-    return 0;   /* Returns 0 if no built-in command was found */
+    return false;
 }
 
-void cd(char *path) {
-    int cd;
-
-    if (path == NULL) {         /* Defaults path to /home if empty */
-            chdir(getenv("HOME"));
-            return ;            /* Leave function early */
-        }
-
-        cd = chdir(path);       /* Collects the status code and potentially changes directory */
-
-        if (cd < 0)             /* Returns error message if an invalid path was given */
-            printf("Invalid directory\n");
+void cd(char const *path) {
+    if (!path)
+        path = getenv("HOME");
+    if (!chdir(path))
+        return;
+    switch (errno) {
+        case EACCES:
+            puts("cd: permission denied");
+            break;
+        case EIO:
+            puts("cd: IO error");
+            break;
+        case ELOOP:
+            puts("cd: looping symbolic links");
+            break;
+        case ENAMETOOLONG:
+        case ENOENT:
+        case ENOTDIR:
+            puts("cd: invalid directory");
+    }
 }
 
 void history(void) {
-    for (int i = 0; i < history_length; i++) {      /* Iterates through the history */
-        history_set_pos(i);                         
-        HIST_ENTRY *current = current_history();    
-        printf("%4d %s\n", i, current->line);       /* Fetch and print the line at that point */
+    for (int i = 0; i < history_length; i++) {
+        history_set_pos(i);
+        HIST_ENTRY *current = current_history();
+        printf("%4d %s\n", i, current->line);
     }
-
-    return ;
 }
 
-void export_var(char *variable) {
-    putenv(variable);           /* Sets the environment variable */
-    return ;
+void export_var(char const *variable) {
+    char * p = strdup(variable);
+    if (putenv(p)) {
+        free(p);
+        if (errno == ENOMEM)
+            exit(1);
+        puts("export: missing '='"); // errno == EINVAL
+    }
 }
