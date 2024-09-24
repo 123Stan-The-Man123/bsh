@@ -170,6 +170,8 @@ void fork_child(char *args[], bool background) {
             goto forkerror;
         if (!p)
             goto exec;
+        fflush(stdout);
+        freopen("/dev/tty", "w", stdout);
         printf("spawned process: %d\n", p);
         exit(0);
     }
