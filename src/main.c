@@ -165,6 +165,8 @@ void fork_child(char *args[], bool background) {
     }
 
     if (!p) {
+        freopen("/dev/null", "w", stdout);
+        freopen("/dev/null", "w", stderr);
         p = fork();
         if (p < 0)
             goto forkerror;
