@@ -58,7 +58,8 @@ void cd(char const *path) {
         strcpy(temp, prev_path);
         strcpy(prev_path, getcwd(NULL, 0));
         if (!chdir(temp)) {
-          return ;
+            printf("%s\n", temp);
+            return ;
         }
     }
 
