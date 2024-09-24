@@ -1,5 +1,5 @@
 # This is bsh, the Basic Shell!
-I am writing this shell completely for fun, as a way to practice and learn C while reading "The C Programming Language" by Kernighan and Richie. For now, it can handle most simple commands, and that's about it. Maybe in the future I will expand on it with features like piping, background processes (that work), etc.
+I am writing this shell completely for fun, as a way to practice and learn C while reading "The C Programming Language" by Kernighan and Richie. For now, it can handle most simple commands, and that's about it. Maybe in the future I will expand on it with features like piping, etc.
 
 ## Features
 * Command parsing
@@ -11,6 +11,6 @@ I am writing this shell completely for fun, as a way to practice and learn C whi
 * Tab completion
 * Username and current working directory displayed in prompt
 * External command execution
-* Background process support (buggy)
+* Background process support
 * Some basic error handling
 * Some basic screen management

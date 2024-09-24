@@ -47,11 +47,9 @@ void main_loop(void) {
             exit(0);
         add_history(input);
 
-        // TODO
-        /* // strip newline from end */
-        /* int len = strlen(input); */
-        /* if (input[len - 1] == '\n') */
-        /*     input[len - 1] = '\0'; */
+        int len = strlen(input) - 1;
+        if (input[len] == '\n')
+            input[len] = '\0';
 
         bool reset_val = false;
         int i = get_tokens(input, &reset_val);
