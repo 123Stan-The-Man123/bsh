@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include "built-in.h"
 
 static void cd(char const *path);
