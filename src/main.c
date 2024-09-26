@@ -58,7 +58,7 @@ void main_loop(void) {
 
         // remove '&' token for background processes
         bool background_process = false;
-        if (!strcmp(args[i - 1], "&") && i > 1) {
+        if (strcmp(args[i - 1], "&") == 0 && i > 1) {
             background_process = true;
             args[--i] = NULL;
         }
@@ -100,7 +100,7 @@ int get_tokens(char *input, bool *reset) {
             return -1;
         }
 
-        if (!strcmp(args[i], "<")) {
+        if (strcmp(args[i], "<") == 0) {
             if (redirect_input)
                 perror("multiple input redirections");
             else
@@ -108,7 +108,7 @@ int get_tokens(char *input, bool *reset) {
             continue;
         }
 
-        if (!strcmp(args[i], ">")) {
+        if (strcmp(args[i], ">") == 0) {
             if (redirect_output)
                 perror("multiple output redirections");
             else

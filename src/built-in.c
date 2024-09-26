@@ -11,7 +11,7 @@ static void history(void);
 static void export_var(char const *variable);
 
 bool detect_builtin(char const *args[static 1]) {
-    if (!strcmp(args[0], "cd")) {
+    if (strcmp(args[0], "cd") == 0) {
         if (args[1] && args[2])
             puts("cd: too many arguments");
         else
@@ -19,7 +19,7 @@ bool detect_builtin(char const *args[static 1]) {
         return true;
     }
 
-    if (!strcmp(args[0], "history")) {
+    if (strcmp(args[0], "history") == 0) {
         if (args[1])
             puts("history: too many arguments");
         else
@@ -27,7 +27,7 @@ bool detect_builtin(char const *args[static 1]) {
         return true;
     }
 
-    if (!strcmp(args[0], "export")) {
+    if (strcmp(args[0], "export") == 0) {
         if (!args[1])
             puts("export: missing argument");
         for (int i = 1; args[i]; ++i)
@@ -35,7 +35,7 @@ bool detect_builtin(char const *args[static 1]) {
         return true;
     }
 
-    if (!strcmp(args[0], "exit")) {
+    if (strcmp(args[0], "exit") == 0) {
         if (!args[1]) {
             system("clear");
             exit(0);
